@@ -112,6 +112,22 @@ The multi-item levels demo starts Gazebo with `--levels`. It reuses the
 Milestone 5 box, sphere, and cone models as independent top-level includes. Each
 level directly refs multiple item instances, so there is no grouped submodel.
 
+## Run Milestone 7
+
+```bash
+.venv/bin/python scripts/dem_gen.py
+.venv/bin/python scripts/dem2dae.py
+./launch/dem_terrain.sh
+```
+
+The DEM terrain demo uses `data/dae/example_dem_100m.dae` through
+`models/dem_terrain/model.sdf`. The model sets the mesh `<scale>` for visual and
+collision together. Use `<scale>x y z</scale>` inside the mesh to resize the DAE;
+for example `2 2 1` doubles the terrain footprint while keeping elevation the
+same. Use the world include `<pose>x y z roll pitch yaw</pose>` to place the
+terrain in simulation. The demo pose is `-50 -50 0 0 0 0`, which centers the
+100 m by 100 m generated DEM around the world origin.
+
 ## Test
 
 ```bash

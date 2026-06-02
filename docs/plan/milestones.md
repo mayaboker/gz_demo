@@ -115,3 +115,13 @@
 
 ### Acceptance Criteria
 - [x] each level loads multiple independent marker model instances through direct level refs
+
+
+## Milestone 7: create terrain from dem that convert to dae
+- [x] use file from data/dae/example_dem_100m.dae
+- [x] create new model
+- [x] create new world and launch file
+- [x] explain how to set model size and pose
+- [x] set module visual and collision
+
+## 
