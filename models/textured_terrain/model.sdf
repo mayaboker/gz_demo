@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<sdf version="1.10">
+  <model name="textured_terrain">
+    <static>true</static>
+    <link name="terrain_link">
+      <visual name="terrain_visual">
+        <geometry>
+          <mesh>
+            <uri>model://textured_terrain/meshes/textured_terrain.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="terrain_collision">
+        <geometry>
+          <mesh>
+            <uri>model://textured_terrain/meshes/textured_terrain.dae</uri>
+          </mesh>
+        </geometry>
+      </collision>
+    </link>
+  </model>
+</sdf>

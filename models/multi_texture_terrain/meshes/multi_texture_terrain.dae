@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
+  <asset>
+    <contributor>
+      <authoring_tool>gz_demo</authoring_tool>
+    </contributor>
+    <unit name="meter" meter="1"/>
+    <up_axis>Z_UP</up_axis>
+  </asset>
+  <library_images>
+    <image id="grass_image" name="grass">
+      <init_from>../materials/textures/grass_checker.png</init_from>
+    </image>
+    <image id="stone_image" name="stone">
+      <init_from>../materials/textures/stone_checker.png</init_from>
+    </image>
+  </library_images>
+  <library_effects>
+    <effect id="grass_effect">
+      <profile_COMMON>
+        <newparam sid="grass_surface">
+          <surface type="2D">
+            <init_from>grass_image</init_from>
+          </surface>
+        </newparam>
+        <newparam sid="grass_sampler">
+          <sampler2D>
+            <source>grass_surface</source>
+          </sampler2D>
+        </newparam>
+        <technique sid="common">
+          <lambert>
+            <diffuse>
+              <texture texture="grass_sampler" texcoord="TEX0"/>
+            </diffuse>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="stone_effect">
+      <profile_COMMON>
+        <newparam sid="stone_surface">
+          <surface type="2D">
+            <init_from>stone_image</init_from>
+          </surface>
+        </newparam>
+        <newparam sid="stone_sampler">
+          <sampler2D>
+            <source>stone_surface</source>
+          </sampler2D>
+        </newparam>
+        <technique sid="common">
+          <lambert>
+            <diffuse>
+              <texture texture="stone_sampler" texcoord="TEX0"/>
+            </diffuse>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+  </library_effects>
+  <library_materials>
+    <material id="grass_material" name="grass_material">
+      <instance_effect url="#grass_effect"/>
+    </material>
+    <material id="stone_material" name="stone_material">
+      <instance_effect url="#stone_effect"/>
+    </material>
+  </library_materials>
+  <library_geometries>
+    <geometry id="multi_texture_terrain_geometry" name="multi_texture_terrain_geometry">
+      <mesh>
+        <source id="multi_texture_terrain_positions">
+          <float_array id="multi_texture_terrain_positions_array" count="12">-5 -5 0 5 -5 0 5 5 0 -5 5 0</float_array>
+          <technique_common>
+            <accessor source="#multi_texture_terrain_positions_array" count="4" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="multi_texture_terrain_normals">
+          <float_array id="multi_texture_terrain_normals_array" count="3">0 0 1</float_array>
+          <technique_common>
+            <accessor source="#multi_texture_terrain_normals_array" count="1" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="multi_texture_terrain_uvs">
+          <float_array id="multi_texture_terrain_uvs_array" count="8">0 0 4 0 4 4 0 4</float_array>
+          <technique_common>
+            <accessor source="#multi_texture_terrain_uvs_array" count="4" stride="2">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="multi_texture_terrain_vertices">
+          <input semantic="POSITION" source="#multi_texture_terrain_positions"/>
+        </vertices>
+        <triangles count="1" material="grass_material">
+          <input semantic="VERTEX" source="#multi_texture_terrain_vertices" offset="0"/>
+          <input semantic="NORMAL" source="#multi_texture_terrain_normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#multi_texture_terrain_uvs" offset="2" set="0"/>
+          <p>0 0 0 1 0 1 2 0 2</p>
+        </triangles>
+        <triangles count="1" material="stone_material">
+          <input semantic="VERTEX" source="#multi_texture_terrain_vertices" offset="0"/>
+          <input semantic="NORMAL" source="#multi_texture_terrain_normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#multi_texture_terrain_uvs" offset="2" set="0"/>
+          <p>0 0 0 2 0 2 3 0 3</p>
+        </triangles>
+      </mesh>
+    </geometry>
+  </library_geometries>
+  <library_visual_scenes>
+    <visual_scene id="Scene" name="Scene">
+      <node id="multi_texture_terrain" name="multi_texture_terrain">
+        <instance_geometry url="#multi_texture_terrain_geometry">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="grass_material" target="#grass_material">
+                <bind_vertex_input semantic="TEX0" input_semantic="TEXCOORD" input_set="0"/>
+              </instance_material>
+              <instance_material symbol="stone_material" target="#stone_material">
+                <bind_vertex_input semantic="TEX0" input_semantic="TEXCOORD" input_set="0"/>
+              </instance_material>
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+      </node>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_visual_scene url="#Scene"/>
+  </scene>
+</COLLADA>

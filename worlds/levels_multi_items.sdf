@@ -1,0 +1,205 @@
+<?xml version="1.0"?>
+<sdf version="1.10">
+  <world name="levels_multi_items">
+    <physics name="default_physics" type="ignored">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+
+    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"/>
+    <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands"/>
+    <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"/>
+
+    <light name="sun" type="directional">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+
+    <include>
+      <name>level_terrain_a</name>
+      <uri>model://level_terrain_a</uri>
+      <pose>-10 0 0 0 0 0</pose>
+    </include>
+    <include>
+      <name>level_terrain_b</name>
+      <uri>model://level_terrain_b</uri>
+      <pose>0 0 0 0 0 0</pose>
+    </include>
+    <include>
+      <name>level_terrain_c</name>
+      <uri>model://level_terrain_c</uri>
+      <pose>10 0 0 0 0 0</pose>
+    </include>
+
+    <include>
+      <name>level_a_box_1</name>
+      <uri>model://level_marker_box</uri>
+      <pose>-13 -2.8 0.46 0 0 0</pose>
+    </include>
+    <include>
+      <name>level_a_box_2</name>
+      <uri>model://level_marker_box</uri>
+      <pose>-11 -2.8 0.46 0 0 0</pose>
+    </include>
+    <include>
+      <name>level_a_sphere_1</name>
+      <uri>model://level_marker_sphere</uri>
+      <pose>-10 2.6 0.46 0 0 0</pose>
+    </include>
+    <include>
+      <name>level_a_sphere_2</name>
+      <uri>model://level_marker_sphere</uri>
+      <pose>-8.5 2.6 0.46 0 0 0</pose>
+    </include>
+    <include>
+      <name>level_a_cone_1</name>
+      <uri>model://level_marker_cone</uri>
+      <pose>-12.5 3.3 0.51 0 0 0</pose>
+    </include>
+    <include>
+      <name>level_a_cone_2</name>
+      <uri>model://level_marker_cone</uri>
+      <pose>-8 3.3 0.51 0 0 0</pose>
+    </include>
+
+    <include>
+      <name>level_b_box_1</name>
+      <uri>model://level_marker_box</uri>
+      <pose>-3 -2.8 0.46 0 0 0</pose>
+    </include>
+    <include>
+      <name>level_b_box_2</name>
+      <uri>model://level_marker_box</uri>
+      <pose>-1 -2.8 0.46 0 0 0</pose>
+    </include>
+    <include>
+      <name>level_b_sphere_1</name>
+      <uri>model://level_marker_sphere</uri>
+      <pose>0 2.6 0.46 0 0 0</pose>
+    </include>
+    <include>
+      <name>level_b_sphere_2</name>
+      <uri>model://level_marker_sphere</uri>
+      <pose>1.5 2.6 0.46 0 0 0</pose>
+    </include>
+    <include>
+      <name>level_b_cone_1</name>
+      <uri>model://level_marker_cone</uri>
+      <pose>-2.5 3.3 0.51 0 0 0</pose>
+    </include>
+    <include>
+      <name>level_b_cone_2</name>
+      <uri>model://level_marker_cone</uri>
+      <pose>2 3.3 0.51 0 0 0</pose>
+    </include>
+
+    <include>
+      <name>level_c_box_1</name>
+      <uri>model://level_marker_box</uri>
+      <pose>7 -2.8 0.46 0 0 0</pose>
+    </include>
+    <include>
+      <name>level_c_box_2</name>
+      <uri>model://level_marker_box</uri>
+      <pose>9 -2.8 0.46 0 0 0</pose>
+    </include>
+    <include>
+      <name>level_c_sphere_1</name>
+      <uri>model://level_marker_sphere</uri>
+      <pose>10 2.6 0.46 0 0 0</pose>
+    </include>
+    <include>
+      <name>level_c_sphere_2</name>
+      <uri>model://level_marker_sphere</uri>
+      <pose>11.5 2.6 0.46 0 0 0</pose>
+    </include>
+    <include>
+      <name>level_c_cone_1</name>
+      <uri>model://level_marker_cone</uri>
+      <pose>7.5 3.3 0.51 0 0 0</pose>
+    </include>
+    <include>
+      <name>level_c_cone_2</name>
+      <uri>model://level_marker_cone</uri>
+      <pose>12 3.3 0.51 0 0 0</pose>
+    </include>
+
+    <include>
+      <name>falling_box</name>
+      <uri>model://falling_box</uri>
+      <pose>-12 2 5 0 0 0</pose>
+    </include>
+
+    <include>
+      <name>level_vehicle</name>
+      <uri>model://level_vehicle</uri>
+      <pose>-12 0 0.55 0 0 0</pose>
+    </include>
+
+    <plugin name="gz::sim" filename="dummy">
+      <performer name="vehicle_performer">
+        <ref>level_vehicle</ref>
+        <geometry>
+          <box>
+            <size>1.4 1.0 1.0</size>
+          </box>
+        </geometry>
+      </performer>
+
+      <level name="level_a">
+        <pose>-10 0 3 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>10.5 8 8</size>
+          </box>
+        </geometry>
+        <buffer>3</buffer>
+        <ref>level_terrain_a</ref>
+        <ref>level_a_box_1</ref>
+        <ref>level_a_box_2</ref>
+        <ref>level_a_sphere_1</ref>
+        <ref>level_a_sphere_2</ref>
+        <ref>level_a_cone_1</ref>
+        <ref>level_a_cone_2</ref>
+        <ref>falling_box</ref>
+      </level>
+
+      <level name="level_b">
+        <pose>0 0 3 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>10.5 8 8</size>
+          </box>
+        </geometry>
+        <buffer>3</buffer>
+        <ref>level_terrain_b</ref>
+        <ref>level_b_box_1</ref>
+        <ref>level_b_box_2</ref>
+        <ref>level_b_sphere_1</ref>
+        <ref>level_b_sphere_2</ref>
+        <ref>level_b_cone_1</ref>
+        <ref>level_b_cone_2</ref>
+      </level>
+
+      <level name="level_c">
+        <pose>10 0 3 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>10.5 8 8</size>
+          </box>
+        </geometry>
+        <buffer>3</buffer>
+        <ref>level_terrain_c</ref>
+        <ref>level_c_box_1</ref>
+        <ref>level_c_box_2</ref>
+        <ref>level_c_sphere_1</ref>
+        <ref>level_c_sphere_2</ref>
+        <ref>level_c_cone_1</ref>
+        <ref>level_c_cone_2</ref>
+      </level>
+    </plugin>
+  </world>
+</sdf>

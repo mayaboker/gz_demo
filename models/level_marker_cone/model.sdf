@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<sdf version="1.10">
+  <model name="level_marker_cone">
+    <static>true</static>
+    <link name="cone_link">
+      <visual name="cone_visual">
+        <geometry>
+          <cone>
+            <radius>0.5</radius>
+            <length>1.0</length>
+          </cone>
+        </geometry>
+        <material>
+          <ambient>0.95 0.7 0.15 1</ambient>
+          <diffuse>0.95 0.7 0.15 1</diffuse>
+        </material>
+      </visual>
+      <collision name="cone_collision">
+        <geometry>
+          <cone>
+            <radius>0.5</radius>
+            <length>1.0</length>
+          </cone>
+        </geometry>
+      </collision>
+    </link>
+  </model>
+</sdf>

@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
+  <asset>
+    <contributor>
+      <authoring_tool>gz_demo</authoring_tool>
+    </contributor>
+    <unit name="meter" meter="1"/>
+    <up_axis>Z_UP</up_axis>
+  </asset>
+  <library_images>
+    <image id="terrain_checker_image" name="terrain_checker">
+      <init_from>../materials/textures/terrain_checker.png</init_from>
+    </image>
+  </library_images>
+  <library_effects>
+    <effect id="terrain_checker_effect">
+      <profile_COMMON>
+        <newparam sid="terrain_checker_surface">
+          <surface type="2D">
+            <init_from>terrain_checker_image</init_from>
+          </surface>
+        </newparam>
+        <newparam sid="terrain_checker_sampler">
+          <sampler2D>
+            <source>terrain_checker_surface</source>
+          </sampler2D>
+        </newparam>
+        <technique sid="common">
+          <lambert>
+            <diffuse>
+              <texture texture="terrain_checker_sampler" texcoord="TEX0"/>
+            </diffuse>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+  </library_effects>
+  <library_materials>
+    <material id="terrain_checker_material" name="terrain_checker_material">
+      <instance_effect url="#terrain_checker_effect"/>
+    </material>
+  </library_materials>
+  <library_geometries>
+    <geometry id="textured_terrain_geometry" name="textured_terrain_geometry">
+      <mesh>
+        <source id="textured_terrain_positions">
+          <float_array id="textured_terrain_positions_array" count="12">-5 -5 0 5 -5 0 5 5 0 -5 5 0</float_array>
+          <technique_common>
+            <accessor source="#textured_terrain_positions_array" count="4" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="textured_terrain_normals">
+          <float_array id="textured_terrain_normals_array" count="3">0 0 1</float_array>
+          <technique_common>
+            <accessor source="#textured_terrain_normals_array" count="1" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="textured_terrain_uvs">
+          <float_array id="textured_terrain_uvs_array" count="8">0 0 4 0 4 4 0 4</float_array>
+          <technique_common>
+            <accessor source="#textured_terrain_uvs_array" count="4" stride="2">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="textured_terrain_vertices">
+          <input semantic="POSITION" source="#textured_terrain_positions"/>
+        </vertices>
+        <triangles count="2" material="terrain_checker_material">
+          <input semantic="VERTEX" source="#textured_terrain_vertices" offset="0"/>
+          <input semantic="NORMAL" source="#textured_terrain_normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#textured_terrain_uvs" offset="2" set="0"/>
+          <p>0 0 0 1 0 1 2 0 2 0 0 0 2 0 2 3 0 3</p>
+        </triangles>
+      </mesh>
+    </geometry>
+  </library_geometries>
+  <library_visual_scenes>
+    <visual_scene id="Scene" name="Scene">
+      <node id="textured_terrain" name="textured_terrain">
+        <instance_geometry url="#textured_terrain_geometry">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="terrain_checker_material" target="#terrain_checker_material">
+                <bind_vertex_input semantic="TEX0" input_semantic="TEXCOORD" input_set="0"/>
+              </instance_material>
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+      </node>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_visual_scene url="#Scene"/>
+  </scene>
+</COLLADA>
