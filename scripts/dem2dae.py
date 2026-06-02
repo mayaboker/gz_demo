@@ -1,4 +1,5 @@
 from pathlib import Path
+import shutil
 
 from osgeo import gdal
 import numpy as np
@@ -7,6 +8,9 @@ import numpy as np
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_DEM_PATH = PROJECT_ROOT / "data" / "dem" / "example_dem_100m.tif"
 DEFAULT_DAE_PATH = PROJECT_ROOT / "data" / "dae" / "example_dem_100m.dae"
+DEFAULT_MODEL_DAE_PATH = (
+    PROJECT_ROOT / "models" / "dem_terrain" / "meshes" / "example_dem_100m.dae"
+)
 
 
 def dem_to_dae(
@@ -70,11 +74,13 @@ def dem_to_dae(
                 v01 = vertex_index[(r + 1, c)]
                 v11 = vertex_index[(r + 1, c + 1)]
 
-                faces.append((v00, v10, v11))
-                faces.append((v00, v11, v01))
+                faces.append((v00, v11, v10))
+                faces.append((v00, v01, v11))
 
     normals = compute_vertex_normals(vertices, faces)
     write_dae(dae_path, vertices, normals, faces)
+    DEFAULT_MODEL_DAE_PATH.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(dae_path, DEFAULT_MODEL_DAE_PATH)
 
 
 def compute_vertex_normals(vertices, faces):
@@ -122,9 +128,32 @@ def write_dae(path, vertices, normals, faces):
     dae = f"""<?xml version="1.0" encoding="utf-8"?>
 <COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
   <asset>
+    <contributor>
+      <authoring_tool>gz_demo</authoring_tool>
+    </contributor>
     <unit name="meter" meter="1"/>
     <up_axis>Z_UP</up_axis>
   </asset>
+
+  <library_effects>
+    <effect id="terrain_effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <diffuse>
+              <color>0.45 0.58 0.36 1</color>
+            </diffuse>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+  </library_effects>
+
+  <library_materials>
+    <material id="terrain_material" name="terrain_material">
+      <instance_effect url="#terrain_effect"/>
+    </material>
+  </library_materials>
 
   <library_geometries>
     <geometry id="terrain_mesh" name="terrain_mesh">
@@ -159,7 +188,7 @@ def write_dae(path, vertices, normals, faces):
           <input semantic="POSITION" source="#terrain_positions"/>
         </vertices>
 
-        <triangles count="{len(faces)}">
+        <triangles count="{len(faces)}" material="terrain_material">
           <input semantic="VERTEX" source="#terrain_vertices" offset="0"/>
           <input semantic="NORMAL" source="#terrain_normals" offset="1"/>
           <p>{face_indices}</p>
@@ -171,7 +200,13 @@ def write_dae(path, vertices, normals, faces):
   <library_visual_scenes>
     <visual_scene id="Scene" name="Scene">
       <node id="terrain" name="terrain">
-        <instance_geometry url="#terrain_mesh"/>
+        <instance_geometry url="#terrain_mesh">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="terrain_material" target="#terrain_material"/>
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
       </node>
     </visual_scene>
   </library_visual_scenes>

@@ -124,4 +124,11 @@
 - [x] explain how to set model size and pose
 - [x] set module visual and collision
 
-## 
+## Milestone 8: multi level terrain from dem
+- [x] use the data/dem/example_dem_100m.tif split it quater and convert to dae
+- [x] create model from each part and add texture desert. soil , rocks and water
+- [x] create level world from the above module
+- [x] add vehicle base on diff drive
+- [x] create new world
+- [x] create new launch that run the world with level support
+- [x] add simple script that read keyboard arrows key and send vehicle twist command

@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<sdf version="1.10">
+  <model name="dem_level_water">
+    <static>true</static>
+    <link name="terrain_link">
+      <visual name="terrain_visual">
+        <geometry>
+          <mesh>
+            <uri>model://dem_level_water/meshes/example_dem_100m_se.dae</uri>
+            <scale>0.5 0.5 1</scale>
+          </mesh>
+        </geometry>
+        <material>
+          <diffuse>0.2 0.49 0.69 1</diffuse>
+          <pbr>
+            <metal>
+              <albedo_map>model://dem_level_water/materials/textures/dem_level_water.png</albedo_map>
+            </metal>
+          </pbr>
+        </material>
+      </visual>
+      <collision name="terrain_collision">
+        <geometry>
+          <mesh>
+            <uri>model://dem_level_water/meshes/example_dem_100m_se.dae</uri>
+            <scale>0.5 0.5 1</scale>
+          </mesh>
+        </geometry>
+      </collision>
+    </link>
+  </model>
+</sdf>

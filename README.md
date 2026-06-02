@@ -128,6 +128,28 @@ same. Use the world include `<pose>x y z roll pitch yaw</pose>` to place the
 terrain in simulation. The demo pose is `-50 -50 0 0 0 0`, which centers the
 100 m by 100 m generated DEM around the world origin.
 
+## Run Milestone 8
+
+```bash
+.venv/bin/python scripts/dem_quarters.py
+./launch/dem_levels_terrain.sh
+```
+
+The DEM levels demo splits `data/dem/example_dem_100m.tif` into four quarter
+tiles and converts each tile to a DAE mesh under `data/dae/`. The four terrain
+models are `dem_level_desert`, `dem_level_soil`, `dem_level_rocks`, and
+`dem_level_water`. Each model has a distinct texture and uses the matching DAE
+for both visual and collision geometry. The world runs with Gazebo levels
+enabled and uses `dem_level_vehicle` as the level performer.
+
+Run the arrow-key drive helper from another terminal:
+
+```bash
+./scripts/drive_dem_level_vehicle.py
+```
+
+Arrow keys command the vehicle, space stops it, and `q` exits the helper.
+
 ## Test
 
 ```bash

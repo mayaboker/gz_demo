@@ -6,7 +6,7 @@
       <visual name="terrain_visual">
         <geometry>
           <mesh>
-            <uri>../../data/dae/example_dem_100m.dae</uri>
+            <uri>model://dem_terrain/meshes/example_dem_100m.dae</uri>
             <scale>1 1 1</scale>
           </mesh>
         </geometry>
@@ -18,7 +18,7 @@
       <collision name="terrain_collision">
         <geometry>
           <mesh>
-            <uri>../../data/dae/example_dem_100m.dae</uri>
+            <uri>model://dem_terrain/meshes/example_dem_100m.dae</uri>
             <scale>1 1 1</scale>
           </mesh>
         </geometry>

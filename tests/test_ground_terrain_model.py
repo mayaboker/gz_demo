@@ -15,6 +15,7 @@ TEXTURED_TERRAIN_ROOT = PROJECT_ROOT / "models" / "textured_terrain"
 MULTI_TEXTURE_TERRAIN_ROOT = PROJECT_ROOT / "models" / "multi_texture_terrain"
 LEVEL_VEHICLE_ROOT = PROJECT_ROOT / "models" / "level_vehicle"
 DEM_TERRAIN_ROOT = PROJECT_ROOT / "models" / "dem_terrain"
+DEM_LEVEL_VEHICLE_ROOT = PROJECT_ROOT / "models" / "dem_level_vehicle"
 LEVEL_TERRAIN_ROOTS = {
     "model://level_terrain_a": PROJECT_ROOT / "models" / "level_terrain_a",
     "model://level_terrain_b": PROJECT_ROOT / "models" / "level_terrain_b",
@@ -25,13 +26,38 @@ LEVEL_MARKER_ROOTS = {
     "model://level_marker_sphere": PROJECT_ROOT / "models" / "level_marker_sphere",
     "model://level_marker_cone": PROJECT_ROOT / "models" / "level_marker_cone",
 }
+DEM_LEVEL_TERRAIN_ROOTS = {
+    "dem_level_desert": PROJECT_ROOT / "models" / "dem_level_desert",
+    "dem_level_soil": PROJECT_ROOT / "models" / "dem_level_soil",
+    "dem_level_rocks": PROJECT_ROOT / "models" / "dem_level_rocks",
+    "dem_level_water": PROJECT_ROOT / "models" / "dem_level_water",
+}
 MESH_URI = "model://ground_terrain/meshes/ground_terrain.dae"
 TEXTURED_MESH_URI = "model://textured_terrain/meshes/textured_terrain.dae"
 MULTI_TEXTURE_MESH_URI = (
     "model://multi_texture_terrain/meshes/multi_texture_terrain.dae"
 )
 DEM_DAE_PATH = PROJECT_ROOT / "data" / "dae" / "example_dem_100m.dae"
-DEM_MESH_URI = "../../data/dae/example_dem_100m.dae"
+DEM_MODEL_DAE_PATH = PROJECT_ROOT / "models" / "dem_terrain" / "meshes" / "example_dem_100m.dae"
+DEM_MESH_URI = "model://dem_terrain/meshes/example_dem_100m.dae"
+DEM_QUARTER_DAE_PATHS = {
+    "dem_level_desert": PROJECT_ROOT / "data" / "dae" / "example_dem_100m_nw.dae",
+    "dem_level_soil": PROJECT_ROOT / "data" / "dae" / "example_dem_100m_ne.dae",
+    "dem_level_rocks": PROJECT_ROOT / "data" / "dae" / "example_dem_100m_sw.dae",
+    "dem_level_water": PROJECT_ROOT / "data" / "dae" / "example_dem_100m_se.dae",
+}
+DEM_QUARTER_MESH_URIS = {
+    "dem_level_desert": "model://dem_level_desert/meshes/example_dem_100m_nw.dae",
+    "dem_level_soil": "model://dem_level_soil/meshes/example_dem_100m_ne.dae",
+    "dem_level_rocks": "model://dem_level_rocks/meshes/example_dem_100m_sw.dae",
+    "dem_level_water": "model://dem_level_water/meshes/example_dem_100m_se.dae",
+}
+DEM_LEVEL_QUARTERS = {
+    "dem_level_desert": "nw",
+    "dem_level_soil": "ne",
+    "dem_level_rocks": "sw",
+    "dem_level_water": "se",
+}
 
 
 def test_ground_terrain_mesh_exists():
@@ -547,6 +573,7 @@ def test_dem_terrain_model_uses_generated_dae_for_visual_and_collision():
     collision_scale = model_root.findtext(".//collision/geometry/mesh/scale")
 
     assert DEM_DAE_PATH.is_file()
+    assert DEM_MODEL_DAE_PATH.is_file()
     assert model_root.findtext(".//model/static") == "true"
     assert visual_uri == DEM_MESH_URI
     assert collision_uri == DEM_MESH_URI
@@ -569,14 +596,43 @@ def test_dem_terrain_dae_has_matching_vertex_normals():
         ".//dae:triangles/dae:input[@semantic='NORMAL']",
         namespace,
     )
+    material = mesh_root.find(".//dae:library_materials/dae:material", namespace)
+    instance_material = mesh_root.find(".//dae:instance_material", namespace)
     triangle_indices = mesh_root.findtext(".//dae:triangles/dae:p", namespaces=namespace)
 
     assert vertex_accessor is not None
     assert normal_accessor is not None
     assert normal_input is not None
+    assert material is not None
+    assert instance_material is not None
     assert vertex_accessor.attrib["count"] == normal_accessor.attrib["count"]
     assert normal_input.attrib["offset"] == "1"
+    assert instance_material.attrib["symbol"] == "terrain_material"
     assert len(triangle_indices.split()) % 6 == 0
+
+
+def test_dem_terrain_dae_triangles_are_wound_for_top_side_rendering():
+    mesh_root = ET.parse(DEM_DAE_PATH).getroot()
+    namespace = {"dae": "http://www.collada.org/2005/11/COLLADASchema"}
+
+    positions_text = mesh_root.findtext(
+        ".//dae:float_array[@id='terrain_positions_array']",
+        namespaces=namespace,
+    )
+    indices_text = mesh_root.findtext(".//dae:triangles/dae:p", namespaces=namespace)
+    positions = [float(value) for value in positions_text.split()]
+    indices = [int(value) for value in indices_text.split()]
+    vertex_indices = indices[0:6:2]
+    vertices = [
+        positions[index * 3 : index * 3 + 3]
+        for index in vertex_indices
+    ]
+    horizontal_cross_z = (
+        (vertices[1][0] - vertices[0][0]) * (vertices[2][1] - vertices[0][1])
+        - (vertices[1][1] - vertices[0][1]) * (vertices[2][0] - vertices[0][0])
+    )
+
+    assert horizontal_cross_z > 0
 
 
 def test_dem_terrain_world_and_launch_script_are_standalone_gazebo():
@@ -608,6 +664,182 @@ def test_readme_explains_dem_terrain_scale_and_pose():
     assert "<scale>x y z</scale>" in readme_text
     assert "<pose>x y z roll pitch yaw</pose>" in readme_text
     assert "-50 -50 0 0 0 0" in readme_text
+
+
+def test_dem_quarter_dae_files_exist_with_matching_normals():
+    namespace = {"dae": "http://www.collada.org/2005/11/COLLADASchema"}
+
+    for name, dae_path in DEM_QUARTER_DAE_PATHS.items():
+        dem_path = PROJECT_ROOT / "data" / "dem" / f"example_dem_100m_{DEM_LEVEL_QUARTERS[name]}.tif"
+        mesh_root = ET.parse(dae_path).getroot()
+        vertex_accessor = mesh_root.find(
+            ".//dae:source[@id='terrain_positions']/dae:technique_common/dae:accessor",
+            namespace,
+        )
+        normal_accessor = mesh_root.find(
+            ".//dae:source[@id='terrain_normals']/dae:technique_common/dae:accessor",
+            namespace,
+        )
+        normal_input = mesh_root.find(
+            ".//dae:triangles/dae:input[@semantic='NORMAL']",
+            namespace,
+        )
+        material = mesh_root.find(".//dae:library_materials/dae:material", namespace)
+        instance_material = mesh_root.find(".//dae:instance_material", namespace)
+
+        assert dem_path.is_file()
+        assert dae_path.is_file()
+        assert vertex_accessor is not None
+        assert normal_accessor is not None
+        assert normal_input is not None
+        assert material is not None
+        assert instance_material is not None
+        assert vertex_accessor.attrib["count"] == normal_accessor.attrib["count"]
+        assert instance_material.attrib["symbol"] == "terrain_material"
+
+
+def test_dem_level_terrain_models_use_quarter_meshes_and_textures():
+    expected_textures = {
+        "dem_level_desert": "dem_level_desert.png",
+        "dem_level_soil": "dem_level_soil.png",
+        "dem_level_rocks": "dem_level_rocks.png",
+        "dem_level_water": "dem_level_water.png",
+    }
+
+    for name, model_path in DEM_LEVEL_TERRAIN_ROOTS.items():
+        model_root = ET.parse(model_path / "model.sdf").getroot()
+        visual_uri = model_root.findtext(".//visual/geometry/mesh/uri")
+        collision_uri = model_root.findtext(".//collision/geometry/mesh/uri")
+        texture_uri = model_root.findtext(".//visual/material/pbr/metal/albedo_map")
+        texture_path = model_path / "materials" / "textures" / expected_textures[name]
+        local_mesh_path = model_path / "meshes" / Path(DEM_QUARTER_MESH_URIS[name]).name
+
+        assert model_root.findtext(".//model/static") == "true"
+        assert local_mesh_path.is_file()
+        assert visual_uri == DEM_QUARTER_MESH_URIS[name]
+        assert collision_uri == DEM_QUARTER_MESH_URIS[name]
+        assert model_root.findtext(".//visual/geometry/mesh/scale") == "0.5 0.5 1"
+        assert model_root.findtext(".//collision/geometry/mesh/scale") == "0.5 0.5 1"
+        assert texture_uri == f"model://{name}/materials/textures/{expected_textures[name]}"
+        assert texture_path.is_file()
+
+
+def test_dem_levels_world_defines_four_dem_levels_and_performer_vehicle():
+    world_root = ET.parse(PROJECT_ROOT / "worlds" / "dem_levels_terrain.sdf").getroot()
+    level_plugin = world_root.find(".//plugin[@name='gz::sim']")
+    levels = level_plugin.findall("level")
+    include_names = {
+        include.findtext("name")
+        for include in world_root.findall(".//include")
+    }
+
+    assert level_plugin is not None
+    assert level_plugin.attrib["filename"] == "dummy"
+    assert level_plugin.findtext("performer/ref") == "dem_level_vehicle"
+    assert [level.attrib["name"] for level in levels] == [
+        "level_desert",
+        "level_soil",
+        "level_rocks",
+        "level_water",
+    ]
+    assert [
+        [ref.text for ref in level.findall("ref")]
+        for level in levels
+    ] == [
+        ["dem_level_desert"],
+        ["dem_level_soil"],
+        ["dem_level_rocks"],
+        ["dem_level_water"],
+    ]
+    assert {
+        "dem_level_desert",
+        "dem_level_soil",
+        "dem_level_rocks",
+        "dem_level_water",
+        "dem_level_vehicle",
+    }.issubset(include_names)
+    assert _include_pose_x(world_root, "model://dem_level_desert") == -25.0
+    assert _include_pose_x(world_root, "model://dem_level_soil") == 0.0
+    assert _include_pose_x(world_root, "model://dem_level_rocks") == -25.0
+    assert _include_pose_x(world_root, "model://dem_level_water") == 0.0
+    assert [level.findtext("pose") for level in levels] == [
+        "-12.5 12.5 5 0 0 0",
+        "12.5 12.5 5 0 0 0",
+        "-12.5 -12.5 5 0 0 0",
+        "12.5 -12.5 5 0 0 0",
+    ]
+    assert all(level.findtext("geometry/box/size") == "25 25 14" for level in levels)
+
+
+def test_dem_levels_world_gui_has_scene_render_plugins():
+    world_root = ET.parse(PROJECT_ROOT / "worlds" / "dem_levels_terrain.sdf").getroot()
+    gui_plugins = {
+        plugin.attrib["filename"]
+        for plugin in world_root.findall(".//gui/plugin")
+    }
+
+    if not gui_plugins:
+        return
+
+    assert "MinimalScene" in gui_plugins
+    assert world_root.findtext(".//gui/plugin[@filename='MinimalScene']/camera_pose") is not None
+
+
+def test_dem_level_vehicle_and_arrow_key_drive_script():
+    model_root = ET.parse(DEM_LEVEL_VEHICLE_ROOT / "model.sdf").getroot()
+    plugin = model_root.find(".//plugin[@name='gz::sim::systems::DiffDrive']")
+    drive_script = (PROJECT_ROOT / "scripts" / "drive_dem_level_vehicle.py").read_text(
+        encoding="utf-8"
+    )
+
+    assert plugin is not None
+    assert plugin.attrib["filename"] == "gz-sim-diff-drive-system"
+    assert plugin.findtext("topic") == "/model/dem_level_vehicle/cmd_vel"
+    assert "/model/dem_level_vehicle/cmd_vel" in drive_script
+    assert "\\x1b[A" in drive_script
+    assert "\\x1b[B" in drive_script
+    assert "\\x1b[C" in drive_script
+    assert "\\x1b[D" in drive_script
+    assert "gz.msgs.Twist" in drive_script
+
+
+def test_dem_levels_launch_script_is_standalone_gazebo_with_levels_enabled():
+    launch_text = (PROJECT_ROOT / "launch" / "dem_levels_terrain.sh").read_text(
+        encoding="utf-8"
+    )
+
+    assert "GZ_SIM_RESOURCE_PATH" in launch_text
+    assert "gz sim" in launch_text
+    assert "--levels" in launch_text
+    assert "dem_levels_terrain.sdf" in launch_text
+    assert "ros2" not in launch_text.lower()
+
+
+def test_dem_soil_check_world_loads_single_soil_model():
+    world_root = ET.parse(PROJECT_ROOT / "worlds" / "dem_soil_check.sdf").getroot()
+    launch_text = (PROJECT_ROOT / "launch" / "dem_soil_check.sh").read_text(
+        encoding="utf-8"
+    )
+    include_uris = [
+        include.findtext("uri")
+        for include in world_root.findall(".//include")
+    ]
+
+    assert len(include_uris) == 2
+    assert include_uris[0] in {
+        "model://dem_level_desert",
+        "model://dem_level_soil",
+        "model://dem_level_rocks",
+        "model://dem_level_water",
+    }
+    assert include_uris[1] == "model://falling_box"
+    assert _include_pose_x(world_root, include_uris[0]) == -12.5
+    assert _include_pose_z(world_root, "model://falling_box") > 10.0
+    assert "GZ_SIM_RESOURCE_PATH" in launch_text
+    assert "gz sim" in launch_text
+    assert "dem_soil_check.sdf" in launch_text
+    assert "--levels" not in launch_text
+    assert "ros2" not in launch_text.lower()
 
 
 @pytest.mark.parametrize(
